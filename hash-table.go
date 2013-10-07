@@ -11,6 +11,9 @@ import "fmt"
 import "math"
 import "crypto/rand" // For tests
 
+// Should be a large prime, not too close to (2^i)-1
+const HashTableSize = 127 
+
 type ListItem struct {
   Key string
   Value int
@@ -23,7 +26,7 @@ type List struct {
 }
 
 type HashTable struct {
-  Items [127]*List
+  Items [HashTableSize]*List
 }
 
 func (l *List) Insert(x *ListItem) {
@@ -78,7 +81,7 @@ func hash(str string) (hash int64) {
 
 func (t *HashTable) Set(key string, value int) {
 
-  hash := hash(key) % 127
+  hash := hash(key) % HashTableSize
 
   if t.Items[hash] == nil {
     t.Items[hash] = &List{nil, &ListItem{key,value}, nil}
@@ -89,7 +92,7 @@ func (t *HashTable) Set(key string, value int) {
 
 func (t *HashTable) Get(key string) int {
   
-  hash := hash(key) % 127
+  hash := hash(key) % HashTableSize
 
   if t.Items[hash] == nil {
     return -1
@@ -111,7 +114,7 @@ func (t *HashTable) Stats() {
     }
   }
   fmt.Println("=================================")
-  fmt.Printf("Items: %d\n", total)
+  fmt.Printf("Items: %d Load Factor: %d\n", total, int(total/HashTableSize))
   fmt.Println("=================================")
 }
 
@@ -130,7 +133,7 @@ func main() {
   // Our hash table
   var ht HashTable
 
-  for i := 0; i < 500000; i ++ {
+  for i := 0; i < HashTableSize*30; i ++ {
     
     str := randString(5)
     ht.Set(str,i)
