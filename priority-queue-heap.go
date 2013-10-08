@@ -9,8 +9,9 @@
 package main
 
 import "fmt"
+import "math/rand" // for testing
 
-const QueueSize = 100
+const QueueSize = 100000
 type QueueItem int
 
 type priority_queue struct {
@@ -22,6 +23,7 @@ func (q *priority_queue) Insert(x QueueItem) {
 
   if q.n >= QueueSize {
     // Queue Overflow
+    return
   }
 
   q.n ++
@@ -128,7 +130,12 @@ func Heapsort(items []QueueItem) {
 
 func main() {
 
-  x := []QueueItem{2,4,5,2,9,5,6,2,3,2,8,3,11,2,33,4}
-  Heapsort(x)
+  items := make([]QueueItem, QueueSize-1)
+
+  for k,_ := range items {
+    items[k] = QueueItem(rand.Intn(100))
+  }
+
+  Heapsort(items)
 
 }
