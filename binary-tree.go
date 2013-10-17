@@ -5,8 +5,7 @@ import (
 )
 
 type Tree struct {
-
-  Left *Tree
+  Left  *Tree
   Value int
   Right *Tree
 }
@@ -40,7 +39,7 @@ func (t *Tree) Traverse(ch chan int) {
 func (t *Tree) Search(x int) *Tree {
 
   if t == nil {
-    return nil 
+    return nil
   }
 
   if t.Value == x {
@@ -50,18 +49,18 @@ func (t *Tree) Search(x int) *Tree {
   if x < t.Value {
     return t.Left.Search(x)
   }
-  
+
   return t.Right.Search(x)
 }
 
 // Post-order traversal to calculate tree depth
 func (t *Tree) Depth() int {
-  
+
   if t == nil {
     return 0
   }
 
-  var left,right int
+  var left, right int
   left = t.Left.Depth()
   right = t.Right.Depth()
 
@@ -73,7 +72,7 @@ func (t *Tree) Depth() int {
 }
 
 func (t *Tree) Min() *Tree {
-  
+
   var min *Tree
 
   if t == nil {
@@ -91,26 +90,26 @@ func (t *Tree) Min() *Tree {
 // Pre-order traversal for graphviz
 func (t *Tree) GraphVizAux() {
 
-  if(t == nil) {
+  if t == nil {
     return
   }
 
-  if(t.Left != nil) {
+  if t.Left != nil {
     fmt.Printf("  %d->%d; \n", t.Value, t.Left.Value)
   }
-  if(t.Right != nil) {
+  if t.Right != nil {
     fmt.Printf("  %d->%d; \n", t.Value, t.Right.Value)
   }
 
-  t.Left.GraphVizAux();
-  t.Right.GraphVizAux();
+  t.Left.GraphVizAux()
+  t.Right.GraphVizAux()
 }
 
 func (t *Tree) GraphViz() {
 
   fmt.Println("digraph BST {")
   fmt.Println("graph [ordering=\"out\"];")
-  t.GraphVizAux() 
+  t.GraphVizAux()
   fmt.Println("labelloc=\"t\";")
   fmt.Printf("label=\"Binary Search Tree with Depth %d\";\n", t.Depth())
   fmt.Println("}")
@@ -118,7 +117,7 @@ func (t *Tree) GraphViz() {
 
 func main() {
 
-  var t,tmp,tmp2 *Tree
+  var t, tmp, tmp2 *Tree
 
   t = t.Insert(2)
   t.Insert(1)
@@ -130,14 +129,14 @@ func main() {
   tmp.Insert(5)
 
   /*
-  ch := make(chan int)
-  go func() {
-    t.Traverse(ch)
-    close(ch)
-  }()
-  for i := range ch {
-    fmt.Println(i)
-  }
+    ch := make(chan int)
+    go func() {
+      t.Traverse(ch)
+      close(ch)
+    }()
+    for i := range ch {
+      fmt.Println(i)
+    }
   */
   t.GraphViz()
 

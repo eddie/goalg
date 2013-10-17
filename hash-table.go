@@ -12,10 +12,10 @@ import "math"
 import "crypto/rand" // For tests
 
 // Should be a large prime, not too close to (2^i)-1
-const HashTableSize = 127 
+const HashTableSize = 127
 
 type ListItem struct {
-  Key string
+  Key   string
   Value int
 }
 
@@ -41,8 +41,8 @@ func (l *List) Search(key string) *List {
 
   if l.Item.Key == key {
     return l
-  } 
-  
+  }
+
   return l.Next.Search(key)
 }
 
@@ -52,14 +52,14 @@ func (l *List) len() int {
   count := 0
 
   for tmp != nil {
-    count ++
+    count++
     tmp = tmp.Next
   }
   return count
 }
 
 func (l *List) Delete(key string) {
-  
+
   node := l.Search(key)
 
   node.Prev.Next = node.Next
@@ -73,7 +73,7 @@ func hash(str string) (hash int64) {
   m := len(str)
 
   for i, c := range str {
-    hash += int64(math.Pow(26, float64(m-(i+1)) ) * float64(c))
+    hash += int64(math.Pow(26, float64(m-(i+1))) * float64(c))
   }
 
   return hash
@@ -84,14 +84,14 @@ func (t *HashTable) Set(key string, value int) {
   hash := hash(key) % HashTableSize
 
   if t.Items[hash] == nil {
-    t.Items[hash] = &List{nil, &ListItem{key,value}, nil}
+    t.Items[hash] = &List{nil, &ListItem{key, value}, nil}
   } else {
     t.Items[hash].Insert(&ListItem{key, value})
   }
 }
 
 func (t *HashTable) Get(key string) int {
-  
+
   hash := hash(key) % HashTableSize
 
   if t.Items[hash] == nil {
@@ -102,7 +102,7 @@ func (t *HashTable) Get(key string) int {
 }
 
 func (t *HashTable) Stats() {
-  
+
   fmt.Println("=================================")
   total := 0
 
@@ -123,7 +123,7 @@ func randString(n int) string {
   var bytes = make([]byte, n)
   rand.Read(bytes)
   for i, b := range bytes {
-    bytes[i] = alphanum[b % byte(len(alphanum))]
+    bytes[i] = alphanum[b%byte(len(alphanum))]
   }
   return string(bytes)
 }
@@ -133,10 +133,10 @@ func main() {
   // Our hash table
   var ht HashTable
 
-  for i := 0; i < HashTableSize*30; i ++ {
-    
+  for i := 0; i < HashTableSize*30; i++ {
+
     str := randString(5)
-    ht.Set(str,i)
+    ht.Set(str, i)
     fmt.Printf("String: %s Value: %d\n", str, ht.Get(str))
   }
 

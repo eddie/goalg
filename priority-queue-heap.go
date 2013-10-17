@@ -12,6 +12,7 @@ import "fmt"
 import "math/rand" // for testing
 
 const QueueSize = 100000
+
 type QueueItem int
 
 type priority_queue struct {
@@ -26,13 +27,13 @@ func (q *priority_queue) Insert(x QueueItem) {
     return
   }
 
-  q.n ++
+  q.n++
   q.q[q.n] = x
   q.BubbleUp(q.n)
 }
 
 func (q *priority_queue) Swap(a int, b int) {
-  
+
   tmp := q.q[a]
   q.q[a] = q.q[b]
   q.q[b] = tmp
@@ -63,7 +64,7 @@ func (q *priority_queue) Parent(n int) int {
     return -1
   }
 
-  return int(n/2)
+  return int(n / 2)
 }
 
 func (q *priority_queue) ExtractMin() QueueItem {
@@ -86,12 +87,12 @@ func (q *priority_queue) ExtractMin() QueueItem {
 }
 
 func (q *priority_queue) BubbleDown(p int) {
-  
+
   c := q.YoungChild(p)
   min_index := p
 
   for i := 0; i <= 1; i++ {
-    if (c+i) <= q.n {
+    if (c + i) <= q.n {
       if q.q[min_index] > q.q[c+i] {
         min_index = c + i
       }
@@ -109,7 +110,7 @@ func MakeHeap(items []QueueItem) *priority_queue {
   var p_queue priority_queue
   p_queue.n = -1
 
-  for _,item := range items {
+  for _, item := range items {
     p_queue.Insert(item)
   }
 
@@ -125,14 +126,14 @@ func Heapsort(items []QueueItem) {
   for tmp >= 0 {
     fmt.Println(tmp)
     tmp = p_queue.ExtractMin()
-  } 
+  }
 }
 
 func main() {
 
   items := make([]QueueItem, QueueSize-1)
 
-  for k,_ := range items {
+  for k, _ := range items {
     items[k] = QueueItem(rand.Intn(100))
   }
 
