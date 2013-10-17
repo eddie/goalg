@@ -169,3 +169,11 @@ func (g *Graph) FindPath(start, end int, cb func(int)) {
 	g.BFS(start, nil, nil, nil)
 	g.FindPathExt(start, end, cb, g.parents)
 }
+
+func (g *Graph) Discovered(v int) bool {
+	return g.discovered[v]
+}
+
+func (g *Graph) VertexCount() int {
+	return g.nvertices
+}
