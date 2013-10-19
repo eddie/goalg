@@ -9,38 +9,42 @@ const (
 	WHITE     = 2
 )
 
+func Complement(color int) int {
+	if color == WHITE {
+		return BLACK
+	}
+	if color == BLACK {
+		return WHITE
+	}
+
+	return UNCOLORED
+}
+
 func BipartitenessTest(g *graph.Graph) bool {
 
 	var color []int = make([]int, 10, graph.MAXVERT)
 	bipartite := true
 
-	complement := func(color int) int {
-		if color == WHITE {
-			return BLACK
-		}
-		if color == BLACK {
-			return WHITE
-		}
-
-		return UNCOLORED
-	}
-	processEdge := func(x, y int) {
+	processEdge := func(x, y int, state *graph.TraversalState) {
 
 		if color[x] == color[y] {
 			bipartite = false
 		}
 
-		color[y] = complement(color[x])
+		color[y] = Complement(color[x])
 	}
+
+	var state *graph.TraversalState = graph.InitTraversalState()
+	var funcs *graph.TraversalFuncs = &graph.TraversalFuncs{Edge: processEdge}
 
 	for i := 1; i < g.VertexCount(); i++ {
 
-		if g.Discovered(i) {
+		if state.Discovered(i) {
 			continue
 		}
 
 		color[i] = WHITE
-		g.BFS(i, nil, nil, processEdge)
+		g.BFS(i, funcs, state)
 	}
 
 	return bipartite

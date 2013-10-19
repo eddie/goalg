@@ -2,7 +2,7 @@
 // Correctness or efficiency not guaranteed. Use at your own risk.
 //
 // Eddie Blundell - eblundell@gmail.com
-// (Mostly translated from The Algorithm Design Manual - Steven S. Skiena) 
+// (Mostly transLated from The Algorithm Design Manual - Steven S. Skiena) 
 
 package graph
 
@@ -23,14 +23,45 @@ type Edgenode struct {
 
 // TODO: merge processed,discovered to enum type
 type Graph struct {
-	edges      []*Edgenode
-	degree     []int
+	edges     []*Edgenode
+	degree    []int
+	nvertices int
+	nedges    int
+	directed  bool
+}
+
+type TraversalState struct {
 	processed  []bool
 	discovered []bool
+	entry_time []int
+	exit_time  []int
 	parents    []int
-	nvertices  int
-	nedges     int
-	directed   bool
+	time       int
+	finished   bool
+}
+
+type TraversalFuncs struct {
+	Early func(int, *TraversalState)
+	Late  func(int, *TraversalState)
+	Edge  func(int, int, *TraversalState)
+}
+
+func (f *TraversalFuncs) ProcessEarly(v int, s *TraversalState) {
+	if f.Early != nil {
+		f.Early(v, s)
+	}
+}
+
+func (f *TraversalFuncs) ProcessLate(v int, s *TraversalState) {
+	if f.Late != nil {
+		f.Late(v, s)
+	}
+}
+
+func (f *TraversalFuncs) ProcessEdge(x, y int, s *TraversalState) {
+	if f.Edge != nil {
+		f.Edge(x, y, s)
+	}
 }
 
 func CreateGraph(directed bool) (g *Graph) {
@@ -38,15 +69,25 @@ func CreateGraph(directed bool) (g *Graph) {
 	g = &Graph{
 		make([]*Edgenode, 10, MAXVERT),
 		make([]int, 10, MAXVERT),
-		make([]bool, 10, MAXVERT),
-		make([]bool, 10, MAXVERT),
-		make([]int, 10, MAXVERT),
 		0,
 		0,
 		directed,
 	}
 
 	return g
+}
+
+func InitTraversalState() (s *TraversalState) {
+
+	return &TraversalState{
+		make([]bool, 10, MAXVERT),
+		make([]bool, 10, MAXVERT),
+		make([]int, 10, MAXVERT),
+		make([]int, 10, MAXVERT),
+		make([]int, 10, MAXVERT),
+		0,
+		false,
+	}
 }
 
 func (g *Graph) InsertEdge(x, y int, directed bool) {
@@ -110,48 +151,90 @@ func (g *Graph) PrintGraph() {
 	}
 }
 
-func (g *Graph) BFS(start int, pve func(int), pvl func(int), pe func(int, int)) {
+func (g *Graph) BFS(start int, funcs *TraversalFuncs, state *TraversalState) {
+
+	if state == nil {
+		state = InitTraversalState()
+	}
 
 	q := queue.NewQueue(20)
 	q.Push(queue.Node(start))
 
-	g.processed[start] = true
-	g.parents[start] = -1
+	state.processed[start] = true
+	state.parents[start] = -1
 
 	for q.Empty() == false {
 
 		v := int(q.Pop())
 
-		g.discovered[v] = true
+		state.discovered[v] = true
 		p := g.edges[v]
 
-		if pve != nil {
-			pve(v)
-		}
+		funcs.ProcessEarly(v, state)
 
 		for p != nil {
 
 			y := p.y
 
-			if g.processed[y] == false || g.directed {
-				if pe != nil {
-					pe(v, y)
-				}
+			if state.processed[y] == false || g.directed {
+				funcs.ProcessEdge(v, y, state)
 			}
 
-			if g.discovered[y] == false {
+			if state.discovered[y] == false {
 				q.Push(queue.Node(y))
-				g.discovered[y] = true
-				g.parents[y] = v
+				state.discovered[y] = true
+				state.parents[y] = v
 			}
 
 			p = p.next
 		}
 
-		if pvl != nil {
-			pvl(v)
-		}
+		funcs.ProcessLate(v, state)
 	}
+}
+
+func (g *Graph) DFS(v int, funcs *TraversalFuncs, state *TraversalState) {
+
+	if state == nil {
+		state = InitTraversalState()
+	}
+
+	if state.finished {
+		return
+	}
+
+	state.discovered[v] = true
+	state.time++
+	state.entry_time[v] = state.time
+
+	funcs.ProcessEarly(v, state)
+
+	p := g.edges[v]
+	for p != nil {
+
+		y := p.y
+		if state.discovered[y] == false {
+
+			state.parents[y] = v
+			funcs.ProcessEdge(v, y, state)
+			g.DFS(y, funcs, state)
+
+		} else if (!state.processed[y] && state.parents[v] != y) || g.directed {
+			funcs.ProcessEdge(v, y, state)
+		}
+
+		if state.finished {
+			return
+		}
+
+		p = p.next
+	}
+
+	funcs.ProcessLate(v, state)
+
+	state.time++
+	state.exit_time[v] = state.time
+	state.processed[v] = true
 }
 
 func (g *Graph) FindPathExt(start, end int, cb func(int), parents []int) {
@@ -166,12 +249,23 @@ func (g *Graph) FindPathExt(start, end int, cb func(int), parents []int) {
 
 func (g *Graph) FindPath(start, end int, cb func(int)) {
 
-	g.BFS(start, nil, nil, nil)
-	g.FindPathExt(start, end, cb, g.parents)
+	var state *TraversalState = InitTraversalState()
+	var funcs *TraversalFuncs = &TraversalFuncs{}
+
+	g.BFS(start, funcs, state)
+	g.FindPathExt(start, end, cb, state.parents)
 }
 
-func (g *Graph) Discovered(v int) bool {
-	return g.discovered[v]
+func (s *TraversalState) Discovered(v int) bool {
+	return s.discovered[v]
+}
+
+func (s *TraversalState) Parent(v int) int {
+	return s.parents[v]
+}
+
+func (s *TraversalState) Finished(finished bool) {
+	s.finished = finished
 }
 
 func (g *Graph) VertexCount() int {
